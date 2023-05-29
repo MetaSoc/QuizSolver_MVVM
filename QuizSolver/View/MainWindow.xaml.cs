@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using QuizSolver.ViewModel;
+using System.Windows;
 
 namespace QuizSolver.View
 {
@@ -9,6 +10,8 @@ namespace QuizSolver.View
     {
         public MainWindow()
         {
+            var vm = new MainViewModel();
+            DataContext = vm;
             InitializeComponent();
         }
     }

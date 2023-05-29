@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace QuizSolver
@@ -12,6 +13,7 @@ namespace QuizSolver
         {
             MessageBox.Show("An unhandled exception just occurred: " + e.Exception.Message, "Unhandled Exception", MessageBoxButton.OK, MessageBoxImage.Warning);
             e.Handled = true;
+            Environment.Exit(0);
         }
     }
 }

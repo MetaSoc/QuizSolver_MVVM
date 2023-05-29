@@ -3,16 +3,16 @@ using System.Text;
 
 namespace QuizSolver.Model
 {
-    internal class Decoder
+    internal class Decription
     {
         // Console.OutputEncoding = System.Text.Encoding.UTF8;
-        public string Encode(string plainText)
+        public string Encript(string plainText)
         {
             var codedText = Convert.ToBase64String(Encoding.UTF8.GetBytes(plainText));
             return codedText;
         }
 
-        public string Decode(string codedText)
+        public static string Decript(string codedText)
         {
             var plainText = Encoding.UTF8.GetString(Convert.FromBase64String(codedText));
             return plainText;
