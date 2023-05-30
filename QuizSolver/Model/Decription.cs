@@ -6,11 +6,11 @@ namespace QuizSolver.Model
     internal class Decription
     {
         // Console.OutputEncoding = System.Text.Encoding.UTF8;
-        public string Encript(string plainText)
-        {
-            var codedText = Convert.ToBase64String(Encoding.UTF8.GetBytes(plainText));
-            return codedText;
-        }
+        //public string Encript(string plainText)
+        //{
+        //    var codedText = Convert.ToBase64String(Encoding.UTF8.GetBytes(plainText));
+        //    return codedText;
+        //}
 
         public static string Decript(string codedText)
         {

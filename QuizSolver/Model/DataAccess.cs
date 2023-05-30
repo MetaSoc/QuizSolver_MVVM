@@ -8,34 +8,37 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using Dapper;
+using QuizSolver.ViewModel;
 
 namespace QuizSolver.Model
 {
     public class DataAccess
     {
-        //static SQLiteConnection _conn = new(@"Data Source=.\DataBaseQuizzes.db; Version=3");
-        ///*SQLiteDataReader reader;
-        //SQLiteCommand command;*/
+        public static List<string> LoadQuizzesList()
+        {
+            using SQLiteConnection conn = new(ConfigurationManager.
+                ConnectionStrings["Default"].ConnectionString);
 
-        //public static ObservableCollection<string> LoadQuizzesList()
-        //{
-        //    ObservableCollection<string> quizzes = new();
-        //    _conn.Open();
+            List<string> quizzesList = new();
 
-        //    DataTable dt = _conn.GetSchema("Tables");
-        //    foreach (DataRow row in dt.Rows)
-        //    {
-        //        quizzes.Add(row[2].ToString());
-        //    }
+            conn.Open();
 
-        //    _conn.Close();
-        //    return quizzes;
-        //}
+            DataTable dt = conn.GetSchema("Tables");
+            foreach (DataRow row in dt.Rows)
+            {
+                if (row[2].ToString() != "sqlite_sequence")
+                    quizzesList.Add(row[2].ToString());
+            }
 
-        public static List<Quiz> LoadQuestions()
+            conn.Close();
+
+            return quizzesList;
+        }
+
+        public static List<Quiz> LoadQuestions(string selectedQuiz)
         {
             using IDbConnection cnn = new SQLiteConnection(LoadConnectionString());
-            var output = cnn.Query<Quiz>("select * from Quiz1", new DynamicParameters());
+            var output = cnn.Query<Quiz>($"select * from {selectedQuiz}", new DynamicParameters());
             return output.ToList();
         }
 
