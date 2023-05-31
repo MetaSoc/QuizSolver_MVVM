@@ -1,147 +1,109 @@
 ﻿using QuizSolver.Model;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Timers;
 using System.Windows;
+using static System.Windows.Application;
 
 namespace QuizSolver.ViewModel
 {
     public class MainViewModel : BaseViewModel
     {
+        // Constructor
         public MainViewModel()
         {
-            LoadAllQuizzes();
+            // LoadAllQuizzes
+            QuizzesList = new ObservableCollection<string>(DataAccess.LoadQuizzesList().OrderBy(i => i));
         }
-        public List<Quiz> QuizQuestions { get; set; } = new();
         
-        public List<string> QuizzesList { get; set; } = new();
-        public void LoadAllQuizzes()
-        {
-            var quizzesList = DataAccess.LoadQuizzesList();
-            quizzesList.Sort();
-            QuizzesList = quizzesList;
-        }
 
-        private int _questionNumber;
-        private int _score;
+        // Relay Methods
+        #region Relay Methods
 
-
-        // Commands
-        #region Commands
-
-         public RelayCommand StartCommand => new(execute => StartQuiz(), canExecute => SelectedQuizIndex != -1);
         private void StartQuiz()
         {
-            QuizQuestions = DataAccess.LoadQuestions(SelectedQuiz);
-
-            SelectedQuizIndex = -1;
-
             _questionNumber = 0;
             _score = 0;
 
-            IsStartEnabled = IsChooseQuizVisible = false;
+            QuizQuestions = DataAccess.LoadQuestions(SelectedQuiz);
 
-            IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = IsNextEnabled = IsTipVisible = true;
+            // Validations
+            #region Validations
 
-            QuestionScore = "Question:";
-            NumberOfQuestion = $"Question {_questionNumber+1}/{QuizQuestions.Count}";
+            // Empty Quiz Validation
+            if (QuizQuestions.Count == 0)
+            {
+                MessageBox.Show($"Quiz \"{SelectedQuiz}\" is empty.\nPlease select another quiz.", "Empty Quiz", MessageBoxButton.OK, MessageBoxImage.Warning);
 
-            SetQuestion(_questionNumber);
-            SetAnswers(_questionNumber);
+                QuizzesList.Remove(SelectedQuiz);
+                SelectedQuiz = null;
+                return;
+            }
+
+            // Proper Quiz Validation
+            if (QuizQuestions[0].Question is null || QuizQuestions[0].Answer1 is null || QuizQuestions[0].Answer2 is null ||
+                QuizQuestions[0].Answer3 is null || QuizQuestions[0].Answer4 is null || QuizQuestions[0].CorrectAnswer is 0)
+            {
+                MessageBox.Show($"Quiz \"{SelectedQuiz}\" isn't made with our QuizMaker\nand cannot be loaded.\nPlease select another quiz.", "Invalid Quiz", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                QuizzesList.Remove(SelectedQuiz);
+                SelectedQuiz = null;
+                return;
+            }
             
+            // Proper Encryption Validation
+            try
+            {
+                SetQuestion();
+                SetAnswers();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show($"Quiz \"{SelectedQuiz}\" isn't made with our QuizMaker\nand cannot be loaded.\nPlease select another quiz.", "Invalid Encription", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                QuizzesList.Remove(SelectedQuiz);
+                SelectedQuiz = null;
+                return;
+            }
+
+            // One-Question Quiz Validation
+            if (QuizQuestions.Count > 1)
+                IsNextEnabled = true;
+
+            #endregion
+
+            SelectedQuiz = null;
+
+            IsStartEnabled = IsChooseQuizVisible = false;
+            IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = IsTipVisible = true;
+
+            QuestionScoreText = "Question:";
+
+            SetNumberOfQuestion();
             StartTimer();
         }
-
-        public RelayCommand FinishCommand => new(execute => FinishQuiz(), canExecute => CanFinish());
         private void FinishQuiz()
         {
+            StopTimer();
+
             IsStartEnabled = IsChooseQuizVisible = true;
-            IsTipVisible = false;
+            IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = 
+                IsNextEnabled = IsPreviousEnabled = IsTipVisible = false;
 
-            _stopwatch.Stop();
-            _timer.Stop();
+            // Calculating Score
+            foreach (var _ in QuizQuestions.Where(question => question.SelectedAnswer == question.CorrectAnswer))
+                _score++;
 
-            foreach (var question in QuizQuestions)
-            {
-                if (question.SelectedAnswer == question.CorrectAnswer)
-                    _score++;
-            }
+            QuestionScoreText = $"You scored {_score}/{QuizQuestions.Count} points in {TimeElapsed}";
 
-            QuestionScore = $"\nYou scored {_score}/{QuizQuestions.Count} points in {TimeElapsed}";
-            
             NumberOfQuestion = Question = Answer1 = Answer2 = Answer3 = Answer4 = null;
-
-            IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = IsNextEnabled = IsPreviousEnabled = false;
         }
-
-        public RelayCommand Answer1Command => new(execute => Answer1Chose());
-        public void Answer1Chose()
+        private void PreviousQuestion()
         {
-            Answer1Disable();
-
-            QuizQuestions[_questionNumber].SelectedAnswer = 1;
-        }
-
-        public RelayCommand Answer2Command => new(execute => Answer2Chose());
-        public void Answer2Chose()
-        {
-            Answer2Disable();
-
-            QuizQuestions[_questionNumber].SelectedAnswer = 2;
-        }
-
-        public RelayCommand Answer3Command => new(execute => Answer3Chose());
-        public void Answer3Chose()
-        {
-            Answer3Disable();
-
-            QuizQuestions[_questionNumber].SelectedAnswer = 3;
-        }
-
-        public RelayCommand Answer4Command => new(execute => Answer4Chose());
-        public void Answer4Chose()
-        {
-            Answer4Disable();
-
-            QuizQuestions[_questionNumber].SelectedAnswer = 4;
-        }
-
-        public RelayCommand NextCommand => new(execute => NextQuestion());
-        public void NextQuestion()
-        {
-            switch (QuizQuestions[_questionNumber + 1].SelectedAnswer)
-            {
-                case 1:
-                    Answer1Disable();
-                    break;
-                case 2:
-                    Answer2Disable();
-                    break;
-                case 3:
-                    Answer3Disable();
-                    break;
-                case 4:
-                    Answer4Disable();
-                    break;
-            }
-
-            IsPreviousEnabled = true;
-            _questionNumber++;
-            NumberOfQuestion = $"Question {_questionNumber + 1}/{QuizQuestions.Count}";
-            SetQuestion(_questionNumber);
-            SetAnswers(_questionNumber);
-
-            if (QuizQuestions[_questionNumber].SelectedAnswer == 0)
-                IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = true;
-
-            if (_questionNumber + 1 == QuizQuestions.Count) 
-                IsNextEnabled = false;
-             
-        }
-
-        public RelayCommand PreviousCommand => new(execute => PreviousQuestion());
-        public void PreviousQuestion()
-        {
+            // Selecting Answer
             switch (QuizQuestions[_questionNumber - 1].SelectedAnswer)
             {
                 case 1:
@@ -158,18 +120,87 @@ namespace QuizSolver.ViewModel
                     break;
             }
 
-            IsNextEnabled = true;
             _questionNumber--;
-            NumberOfQuestion = $"Question {_questionNumber + 1}/{QuizQuestions.Count}";
-            SetQuestion(_questionNumber);
-            SetAnswers(_questionNumber);
+            IsNextEnabled = true;
 
-            if (QuizQuestions[_questionNumber].SelectedAnswer == 0)
-                IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = true;
+            SetNumberOfQuestion();
+
+            SetQuestion();
+            SetAnswers();
+
+            IsAnswerSelected();
 
             if (_questionNumber == 0)
                 IsPreviousEnabled = false;
         }
+        private void NextQuestion()
+        {
+            // Selecting Answer
+            switch (QuizQuestions[_questionNumber + 1].SelectedAnswer)
+            {
+                case 1:
+                    Answer1Disable();
+                    break;
+                case 2:
+                    Answer2Disable();
+                    break;
+                case 3:
+                    Answer3Disable();
+                    break;
+                case 4:
+                    Answer4Disable();
+                    break;
+            }
+
+            _questionNumber++;
+            IsPreviousEnabled = true;
+
+            SetNumberOfQuestion();
+
+            SetQuestion();
+            SetAnswers();
+
+            IsAnswerSelected();
+
+            if (_questionNumber + 1 == QuizQuestions.Count)
+                IsNextEnabled = false;
+
+        }
+        private void Answer1Chose()
+        {
+            Answer1Disable();
+            QuizQuestions[_questionNumber].SelectedAnswer = 1;
+        }
+        private void Answer2Chose()
+        {
+            Answer2Disable();
+            QuizQuestions[_questionNumber].SelectedAnswer = 2;
+        }
+        private void Answer3Chose()
+        {
+            Answer3Disable();
+            QuizQuestions[_questionNumber].SelectedAnswer = 3;
+        }
+        private void Answer4Chose()
+        {
+            Answer4Disable();
+            QuizQuestions[_questionNumber].SelectedAnswer = 4;
+        }
+
+        #endregion
+
+
+        // Relay Commands
+        #region RelayCommands
+
+        public RelayCommand StartCommand => new(execute => StartQuiz(), canExecute => SelectedQuiz is not null);
+        public RelayCommand FinishCommand => new(execute => FinishQuiz(), canExecute => CanFinish());
+        public RelayCommand Answer1Command => new(execute => Answer1Chose());
+        public RelayCommand Answer2Command => new(execute => Answer2Chose());
+        public RelayCommand Answer3Command => new(execute => Answer3Chose());
+        public RelayCommand Answer4Command => new(execute => Answer4Chose());
+        public RelayCommand PreviousCommand => new(execute => PreviousQuestion());
+        public RelayCommand NextCommand => new(execute => NextQuestion());
 
         #endregion Commands
 
@@ -179,70 +210,71 @@ namespace QuizSolver.ViewModel
 
         private bool CanFinish()
         {
-            foreach (var question in QuizQuestions)
-            {
-                if (question.SelectedAnswer == 0)
-                    return false;
-            }
-
-            if (IsChooseQuizVisible)
+            if (QuizQuestions.Any(question => question.SelectedAnswer == 0))
                 return false;
 
-            return true;
+            return !IsChooseQuizVisible;
         }
-
-        private void SetQuestion(int questionNumber)
+        private void SetQuestion()
         {
-            Question = Decription.Decript(QuizQuestions[questionNumber].Question);
+            Question = Decription.Decript(QuizQuestions[_questionNumber].Question);
         }
-
-        private void SetAnswers(int questionNumber)
+        private void SetAnswers()
         {
-            Answer1 = Decription.Decript(QuizQuestions[questionNumber].Answer1);
-            Answer2 = Decription.Decript(QuizQuestions[questionNumber].Answer2);
-            Answer3 = Decription.Decript(QuizQuestions[questionNumber].Answer3);
-            Answer4 = Decription.Decript(QuizQuestions[questionNumber].Answer4);
+            Answer1 = Decription.Decript(QuizQuestions[_questionNumber].Answer1);
+            Answer2 = Decription.Decript(QuizQuestions[_questionNumber].Answer2);
+            Answer3 = Decription.Decript(QuizQuestions[_questionNumber].Answer3);
+            Answer4 = Decription.Decript(QuizQuestions[_questionNumber].Answer4);
         }
-
+        private void SetNumberOfQuestion()
+        {
+            NumberOfQuestion = $"Question {_questionNumber + 1}/{QuizQuestions.Count}";
+        }
+        private void IsAnswerSelected()
+        {
+            if (QuizQuestions[_questionNumber].SelectedAnswer == 0)
+                IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = true;
+        }
         private void Answer1Disable()
         {
             IsAnswer1Enabled = false;
             IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = true;
         }
-
         private void Answer2Disable()
         {
             IsAnswer2Enabled = false;
             IsAnswer1Enabled = IsAnswer3Enabled = IsAnswer4Enabled = true;
         }
-
         private void Answer3Disable()
         {
             IsAnswer3Enabled = false;
             IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer4Enabled = true;
         }
-
         private void Answer4Disable()
         {
             IsAnswer4Enabled = false;
             IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = true;
         }
-
-        private Stopwatch _stopwatch;
-        private Timer _timer;
         private void StartTimer()
         {
             _stopwatch = new Stopwatch();
             _timer = new Timer(1000);
+
             TimeElapsed = "00:00";
+
             _timer.Elapsed += TimerTick;
+
             _stopwatch.Start();
             _timer.Start();
         }
-        
+        private void StopTimer()
+        {
+            _stopwatch.Stop();
+            _timer.Stop();
+        }
         private void TimerTick(object sender, ElapsedEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke(() => { TimeElapsed = _stopwatch.Elapsed.ToString(@"mm\:ss"); });
+            Current.Dispatcher.Invoke(() => { TimeElapsed = _stopwatch.Elapsed.ToString(@"mm\:ss"); });
         }
 
         #endregion
@@ -250,6 +282,14 @@ namespace QuizSolver.ViewModel
 
         // Properites
         #region Properties
+
+        private List<Quiz> QuizQuestions { get; set; } = new();
+        public ObservableCollection<string> QuizzesList { get; set; }
+
+        private int _questionNumber;
+        private int _score;
+        private Stopwatch _stopwatch;
+        private Timer _timer;
 
         private string _numberOfQuestion;
         public string NumberOfQuestion
@@ -317,13 +357,13 @@ namespace QuizSolver.ViewModel
             }
         }
 
-        private string _questionScore;
-        public string QuestionScore
+        private string _questionScoreText;
+        public string QuestionScoreText
         {
-            get => _questionScore;
+            get => _questionScoreText;
             set
             {
-                _questionScore = value;
+                _questionScoreText = value;
                 OnPropertyChanged();
             }
         }
@@ -335,6 +375,17 @@ namespace QuizSolver.ViewModel
             set
             {
                 _timeElapsed = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _selectedQuiz;
+        public string SelectedQuiz
+        {
+            get => _selectedQuiz;
+            set
+            {
+                _selectedQuiz = value;
                 OnPropertyChanged();
             }
         }
@@ -464,32 +515,6 @@ namespace QuizSolver.ViewModel
         }
 
         #endregion
-
-
-        // SelectedQuizIndex
-        private int _selectedQuizIndex = -1;
-        public int SelectedQuizIndex
-        {
-            get => _selectedQuizIndex;
-            set
-            {
-                _selectedQuizIndex = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private string _selectedQuiz;
-
-        public string SelectedQuiz
-        {
-            get => _selectedQuiz;
-            set
-            {
-                _selectedQuiz = value;
-                OnPropertyChanged();
-            }
-        }
-
 
     }
 }

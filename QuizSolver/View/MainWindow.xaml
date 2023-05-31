@@ -7,13 +7,13 @@
         Title="QuizSolver"
         Width="1400"
         Height="800"
-        MinWidth="900"
-        MinHeight="630"
+        MinWidth="950"
+        MinHeight="550"
         Background="#202020"
         BorderBrush="DarkRed"
         BorderThickness="5"
         Foreground="White"
-        Icon="/View/quiz.png"
+        Icon="quiz.png"
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d">
 
@@ -23,12 +23,11 @@
     </Window.DataContext>
 
     <!--  Window Resources/Styles  -->
-    <!--#region Window Resources/Styles-->
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Template" Value="{DynamicResource ButtonDarkTemplate}" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="#323232" />
+            <Setter Property="Background" Value="#363636" />
             <Setter Property="Padding" Value="10,0" />
             <Setter Property="Margin" Value="10" />
         </Style>
@@ -40,11 +39,11 @@
             <Setter Property="FontWeight" Value="Thin" />
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
             <Setter Property="TextWrapping" Value="WrapWithOverflow" />
+            <Setter Property="TextAlignment" Value="Center" />
         </Style>
 
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Window.Resources>
-    <!--#endregion-->
 
     <!--  Main Grid  -->
     <Grid ShowGridLines="False">
@@ -53,39 +52,43 @@
         <!--#region Definitions-->
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
-            <RowDefinition Height="0.75*" />
+            <RowDefinition Height="0.8*" />
             <RowDefinition Height="1.5*" />
-            <RowDefinition Height="0.5*" />
+            <RowDefinition Height="0.5*" MinHeight="60" />
             <RowDefinition Height="4*" />
             <RowDefinition Height="20" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20" />
             <ColumnDefinition Width="1*" MinWidth="255" />
-            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="2*" MinWidth="370" />
             <ColumnDefinition Width="1*" MinWidth="235" />
             <ColumnDefinition Width="20" />
         </Grid.ColumnDefinitions>
         <!--#endregion-->
 
+
         <!--  Border Lines  -->
         <!--#region Border Lines-->
-        <Border Name="LeftHorizontal"
-                Grid.Row="2"
+
+        <!--  Left Horizontal  -->
+        <Border Grid.Row="2"
                 Grid.Column="1"
                 Margin="5,0,15,0"
                 Background="Transparent"
                 BorderBrush="#848484"
                 BorderThickness="0,0,0,1" />
-        <Border Name="MiddleTwoVertical"
-                Grid.Row="1"
+
+        <!--  Two Middle Vertical  -->
+        <Border Grid.Row="1"
                 Grid.RowSpan="4"
                 Grid.Column="2"
                 Background="Transparent"
                 BorderBrush="#848484"
                 BorderThickness="1,0" />
-        <Border Name="RightHorizontal"
-                Grid.Row="2"
+
+        <!--  Right Horizontal  -->
+        <Border Grid.Row="2"
                 Grid.Column="3"
                 Margin="15,0,5,0"
                 Background="Transparent"
@@ -94,28 +97,31 @@
         <!--#endregion-->
 
 
-        <!--  COLUMN 1  -->
+        <!--  ##### COLUMN 1 #####  -->
         <!--#region COLUMN 1-->
 
-        <!--  Choose Quiz  -->
-        <Grid Margin="0,0,10,10"
+        <!--  Choose Quiz Box  -->
+        <Grid MaxHeight="200"
+              Margin="0,0,10,10"
               Column="1"
               Row="1"
               RowSpan="2"
               Visibility="{Binding IsChooseQuizVisible, Converter={StaticResource BoolToVisibility}}">
 
+            <!--  RowDefinitions  -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
 
+            <!--  Middle Line  -->
             <Grid Margin="10,0" Row="0">
                 <Border Background="Transparent"
                         BorderBrush="#848484"
                         BorderThickness="0,0,0,1" />
             </Grid>
 
-            <!--  Border Rounded  -->
+            <!--  Rounded Border  -->
             <Border Grid.Row="0"
                     Grid.RowSpan="2"
                     Background="Transparent"
@@ -123,7 +129,7 @@
                     BorderThickness="2"
                     CornerRadius="10" />
 
-            <!--  Choose Quiz:  -->
+            <!--  Choose Quiz TextBlock  -->
             <TextBlock Grid.Row="0"
                        Margin="10,0,10,5"
                        VerticalAlignment="Center"
@@ -141,39 +147,42 @@
                       VerticalAlignment="Stretch"
                       ItemContainerStyle="{DynamicResource ComboBoxItemDarkContainerStyle}"
                       ItemsSource="{Binding QuizzesList}"
-                      SelectedIndex="{Binding SelectedQuizIndex}"
                       SelectedItem="{Binding SelectedQuiz}"
                       Template="{DynamicResource ComboBoxDarkTemplate}" />
-            <!--  ItemsSource="{Binding QuizzesList}"  -->
         </Grid>
 
-        <!--  Progress + Tip  -->
+        <!--  Tip TextBlock  -->
+        <Grid Margin="0,0,30,40"
+              VerticalAlignment="Bottom"
+              Column="1"
+              Row="2">
+
+            <TextBlock FontSize="19"
+                       Foreground="#999999"
+                       TextAlignment="Right"
+                       Visibility="{Binding IsTipVisible, Converter={StaticResource BoolToVisibility}}">
+                Remember to press "Finish"<LineBreak />
+                button to end the quiz&#160;</TextBlock>
+        </Grid>
+
+        <!--  Number of Question TextBlock  -->
         <Grid Column="1"
               Row="3"
               RowSpan="2">
-            <StackPanel>
-                <TextBlock Margin="30,20,30,10"
-                           VerticalAlignment="Top"
-                           FontSize="35"
-                           Text="{Binding NumberOfQuestion}"
-                           TextAlignment="Right" />
-                <TextBlock Margin="0,0,30,0"
-                           VerticalAlignment="Top"
-                           FontSize="15"
-                           Foreground="#888888"
-                           TextAlignment="Right"
-                           Visibility="{Binding IsTipVisible, Converter={StaticResource BoolToVisibility}}">
-                    Remember to press "Finish"<LineBreak />
-                    button to end the quiz&#160;</TextBlock>
-            </StackPanel>
+
+            <TextBlock Margin="30,20,30,10"
+                       VerticalAlignment="Top"
+                       FontSize="35"
+                       Text="{Binding NumberOfQuestion}"
+                       TextAlignment="Right" />
         </Grid>
 
-        <!--  Previous  -->
-        <Grid Margin="20,40,30,70"
+        <!--  Previous Button  -->
+        <Grid Margin="30,40,30,70"
               Column="1"
               Row="4">
 
-            <Button MaxHeight="160"
+            <Button MaxHeight="170"
                     Command="{Binding PreviousCommand}"
                     FontSize="40"
                     IsEnabled="{Binding IsPreviousEnabled}">
@@ -185,13 +194,15 @@
         <!--#endregion-->
 
 
-        <!--  COLUMN 2  -->
+        <!--  ##### COLUMN 2 #####  -->
         <!--#region COLUMN 2-->
 
         <!--  Title "QUIZ SOLVER"  -->
         <Grid Column="2"
               Row="0"
               RowSpan="2">
+
+            <!--  Resources  -->
             <Grid.Resources>
                 <Style TargetType="TextBlock">
                     <Setter Property="HorizontalAlignment" Value="Center" />
@@ -200,11 +211,12 @@
                     <Setter Property="FontWeight" Value="DemiBold" />
                 </Style>
             </Grid.Resources>
+
+            <!--  TextBlocks  -->
             <TextBlock Padding="10,0"
                        FontSize="55"
                        Foreground="Black"
                        Text="QUIZ SOLVER" />
-
             <TextBlock Padding="7,0,10,5"
                        FontSize="54"
                        Foreground="DarkRed"
@@ -216,17 +228,19 @@
               Column="2"
               Row="2"
               RowSpan="2">
-            <Border Name="MiddleTwoHorizontal"
-                    BorderBrush="#848484"
-                    BorderThickness="0,1">
+
+            <!--  Two Middle Horizontal Border Lines + TextBlocks  -->
+            <Border BorderBrush="#848484" BorderThickness="0,1">
                 <StackPanel>
-                    <TextBlock Margin="5"
+                    <!--  TextBlocks  -->
+                    <TextBlock Margin="10,15,10,5"
                                FontSize="35"
-                               Text="{Binding QuestionScore}" />
-                    <TextBlock Margin="10,5"
+                               Text="{Binding QuestionScoreText}"
+                               TextAlignment="Left" />
+                    <TextBlock Margin="10,0"
                                FontSize="30"
                                Text="{Binding Question}"
-                               TextWrapping="WrapWithOverflow" />
+                               TextAlignment="Left" />
                 </StackPanel>
             </Border>
         </Grid>
@@ -236,6 +250,7 @@
               Column="2"
               Row="4">
 
+            <!--  Definitions  -->
             <!--#region Definitions-->
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -247,37 +262,40 @@
             </Grid.ColumnDefinitions>
             <!--#endregion-->
 
-            <Button x:Name="OdpAButton"
-                    Grid.Row="0"
+            <!--  Answer1 Button  -->
+            <Button Grid.Row="0"
                     Grid.Column="0"
                     Command="{Binding Answer1Command}"
                     FontSize="30"
                     IsEnabled="{Binding IsAnswer1Enabled}">
-                <TextBlock Text="{Binding Answer1}" TextAlignment="Center" />
+                <TextBlock Text="{Binding Answer1}" />
             </Button>
-            <Button x:Name="OdpBButton"
-                    Grid.Row="0"
+
+            <!--  Answer2 Button  -->
+            <Button Grid.Row="0"
                     Grid.Column="1"
                     Command="{Binding Answer2Command}"
                     FontSize="30"
                     IsEnabled="{Binding IsAnswer2Enabled}">
-                <TextBlock Text="{Binding Answer2}" TextAlignment="Center" />
+                <TextBlock Text="{Binding Answer2}" />
             </Button>
-            <Button x:Name="OdpCButton"
-                    Grid.Row="1"
+
+            <!--  Answer3 Button  -->
+            <Button Grid.Row="1"
                     Grid.Column="0"
                     Command="{Binding Answer3Command}"
                     FontSize="30"
                     IsEnabled="{Binding IsAnswer3Enabled}">
-                <TextBlock Text="{Binding Answer3}" TextAlignment="Center" />
+                <TextBlock Text="{Binding Answer3}" />
             </Button>
-            <Button x:Name="OdpDButton"
-                    Grid.Row="1"
+
+            <!--  Answer4 Button  -->
+            <Button Grid.Row="1"
                     Grid.Column="1"
                     Command="{Binding Answer4Command}"
                     FontSize="30"
                     IsEnabled="{Binding IsAnswer4Enabled}">
-                <TextBlock Text="{Binding Answer4}" TextAlignment="Center" />
+                <TextBlock Text="{Binding Answer4}" />
             </Button>
 
         </Grid>
@@ -285,7 +303,7 @@
         <!--#endregion-->
 
 
-        <!--  COLUMN 3  -->
+        <!--  ##### COLUMN 3 #####  -->
         <!--#region COLUMN 3-->
 
         <!--  Timer + Start/Finish  -->
@@ -295,40 +313,44 @@
               Row="1"
               RowSpan="2">
 
+            <!--  RowDefinitions  -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*" />
-                <RowDefinition Height="3" />
-                <RowDefinition Height="1.3*" />
+                <RowDefinition Height="1.2*" />
             </Grid.RowDefinitions>
 
-            <!--  Timer  -->
-            <Border Background="Transparent"
+            <!--  Timer Rounded Border  -->
+            <Border MaxHeight="80"
+                    Margin="0,5"
+                    Background="Transparent"
                     BorderBrush="#848484"
                     BorderThickness="2"
                     CornerRadius="10" />
+
+            <!--  Timer TextBlock  -->
             <TextBlock Grid.Row="0"
-                       Margin="7"
-                       HorizontalAlignment="Center"
+                       Margin="10"
                        VerticalAlignment="Center"
                        FontSize="40"
-                       FontWeight="Thin"
-                       Text="{Binding TimeElapsed}"
-                       TextAlignment="Center" />
+                       Text="{Binding TimeElapsed}" />
 
             <!--  Start/Finish  -->
-            <Grid MaxHeight="85" Row="2">
+            <Grid MaxHeight="100" Row="1">
 
+                <!--  ColumnDefinitions  -->
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1.1*" />
+                    <ColumnDefinition Width="1.2*" />
                 </Grid.ColumnDefinitions>
 
+                <!--  Middle Vertical Line  -->
                 <Grid Margin="0,10" Column="0">
                     <Border Background="Transparent"
                             BorderBrush="#848484"
                             BorderThickness="0,0,1,0" />
                 </Grid>
 
+                <!--  Rounded Border  -->
                 <Border Grid.Column="0"
                         Grid.ColumnSpan="2"
                         Background="Transparent"
@@ -336,15 +358,16 @@
                         BorderThickness="2"
                         CornerRadius="10" />
 
-                <Button x:Name="StartButton"
-                        Grid.Column="0"
+                <!--  Start Button  -->
+                <Button Grid.Column="0"
                         Command="{Binding StartCommand}"
                         FontSize="30"
                         IsEnabled="{Binding IsStartEnabled}">
                     <TextBlock Text="Start" />
                 </Button>
-                <Button x:Name="FinishButton"
-                        Grid.Column="1"
+
+                <!--  Finish Button  -->
+                <Button Grid.Column="1"
                         Command="{Binding FinishCommand}"
                         FontSize="30"
                         IsEnabled="{Binding IsFinishEnabled}">
@@ -353,12 +376,12 @@
             </Grid>
         </Grid>
 
-        <!--  Next  -->
-        <Grid Margin="30,40,20,70"
+        <!--  Next Button  -->
+        <Grid Margin="30,40,30,70"
               Column="3"
               Row="4">
 
-            <Button MaxHeight="160"
+            <Button MaxHeight="170"
                     Command="{Binding NextCommand}"
                     FontSize="40"
                     IsEnabled="{Binding IsNextEnabled}">
