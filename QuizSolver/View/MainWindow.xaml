@@ -180,12 +180,29 @@
         <!--  Previous Button  -->
         <Grid Margin="30,40,30,70"
               Column="1"
-              Row="4">
+              Row="4"
+              ZIndex="1">
 
             <Button MaxHeight="170"
                     Command="{Binding PreviousCommand}"
                     FontSize="40"
-                    IsEnabled="{Binding IsPreviousEnabled}">
+                    IsEnabled="{Binding IsPreviousEnabled}"
+                    Visibility="{Binding IsPreviousVisible, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="Previous" />
+            </Button>
+
+        </Grid>
+
+        <!--  Overview Prevoius Button  -->
+        <Grid Margin="30,40,30,70"
+              Column="1"
+              Row="4"
+              ZIndex="0">
+
+            <Button MaxHeight="170"
+                    Command="{Binding OverviewPreviousCommand}"
+                    FontSize="40"
+                    IsEnabled="{Binding IsOverviewPreviousEnabled}">
                 <TextBlock Text="Previous" />
             </Button>
 
@@ -265,36 +282,52 @@
             <!--  Answer1 Button  -->
             <Button Grid.Row="0"
                     Grid.Column="0"
+                    Background="{Binding Answer1ChoseBg}"
+                    BorderBrush="{Binding Answer1Brush}"
+                    BorderThickness="{Binding Answer1Thickness}"
                     Command="{Binding Answer1Command}"
                     FontSize="30"
-                    IsEnabled="{Binding IsAnswer1Enabled}">
+                    IsEnabled="{Binding IsAnswer1Enabled}"
+                    IsHitTestVisible="{Binding IsAnswerAbleToClick}">
                 <TextBlock Text="{Binding Answer1}" />
             </Button>
 
             <!--  Answer2 Button  -->
             <Button Grid.Row="0"
                     Grid.Column="1"
+                    Background="{Binding Answer2ChoseBg}"
+                    BorderBrush="{Binding Answer2Brush}"
+                    BorderThickness="{Binding Answer2Thickness}"
                     Command="{Binding Answer2Command}"
                     FontSize="30"
-                    IsEnabled="{Binding IsAnswer2Enabled}">
+                    IsEnabled="{Binding IsAnswer2Enabled}"
+                    IsHitTestVisible="{Binding IsAnswerAbleToClick}">
                 <TextBlock Text="{Binding Answer2}" />
             </Button>
 
             <!--  Answer3 Button  -->
             <Button Grid.Row="1"
                     Grid.Column="0"
+                    Background="{Binding Answer3ChoseBg}"
+                    BorderBrush="{Binding Answer3Brush}"
+                    BorderThickness="{Binding Answer3Thickness}"
                     Command="{Binding Answer3Command}"
                     FontSize="30"
-                    IsEnabled="{Binding IsAnswer3Enabled}">
+                    IsEnabled="{Binding IsAnswer3Enabled}"
+                    IsHitTestVisible="{Binding IsAnswerAbleToClick}">
                 <TextBlock Text="{Binding Answer3}" />
             </Button>
 
             <!--  Answer4 Button  -->
             <Button Grid.Row="1"
                     Grid.Column="1"
+                    Background="{Binding Answer4ChoseBg}"
+                    BorderBrush="{Binding Answer4Brush}"
+                    BorderThickness="{Binding Answer4Thickness}"
                     Command="{Binding Answer4Command}"
                     FontSize="30"
-                    IsEnabled="{Binding IsAnswer4Enabled}">
+                    IsEnabled="{Binding IsAnswer4Enabled}"
+                    IsHitTestVisible="{Binding IsAnswerAbleToClick}">
                 <TextBlock Text="{Binding Answer4}" />
             </Button>
 
@@ -379,12 +412,29 @@
         <!--  Next Button  -->
         <Grid Margin="30,40,30,70"
               Column="3"
-              Row="4">
+              Row="4"
+              ZIndex="1">
 
             <Button MaxHeight="170"
                     Command="{Binding NextCommand}"
                     FontSize="40"
-                    IsEnabled="{Binding IsNextEnabled}">
+                    IsEnabled="{Binding IsNextEnabled}"
+                    Visibility="{Binding IsNextVisible, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="Next" />
+            </Button>
+
+        </Grid>
+
+        <!--  Overview Next Button  -->
+        <Grid Margin="30,40,30,70"
+              Column="3"
+              Row="4"
+              ZIndex="0">
+
+            <Button MaxHeight="170"
+                    Command="{Binding OverviewNextCommand}"
+                    FontSize="40"
+                    IsEnabled="{Binding IsOverviewNextEnabled}">
                 <TextBlock Text="Next" />
             </Button>
 
