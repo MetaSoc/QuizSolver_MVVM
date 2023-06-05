@@ -78,9 +78,15 @@ namespace QuizSolver.ViewModel
             SelectedQuiz = null;
 
             IsStartEnabled = IsChooseQuizVisible = false;
-            IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = IsTipVisible = true;
+            IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = 
+                IsTipVisible = IsPreviousVisible = IsNextVisible = IsAnswerAbleToClick = true;
 
             QuestionScoreText = "Question:";
+
+            DefaultButtons();
+
+            SetQuestion();
+            SetAnswers();
 
             SetNumberOfQuestion();
             StartTimer();
@@ -90,8 +96,7 @@ namespace QuizSolver.ViewModel
             StopTimer();
 
             IsStartEnabled = IsChooseQuizVisible = true;
-            IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = 
-                IsNextEnabled = IsPreviousEnabled = IsTipVisible = false;
+            IsNextEnabled = IsPreviousEnabled = IsTipVisible = IsPreviousVisible = IsNextVisible = IsAnswerAbleToClick = false;
 
             // Calculating Score
             foreach (var _ in QuizQuestions.Where(question => question.SelectedAnswer == question.CorrectAnswer))
@@ -99,72 +104,66 @@ namespace QuizSolver.ViewModel
 
             QuestionScoreText = $"You scored {_score}/{QuizQuestions.Count} points in {TimeElapsed}";
 
-            NumberOfQuestion = Question = Answer1 = Answer2 = Answer3 = Answer4 = null;
+            // Overview
+            #region Overview
+            
+            _questionNumber = 0;
+
+            OverviewSelectChoseAnswerLoad();
+            OverviewShowAnswer();
+
+            IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = true;
+
+            if (QuizQuestions.Count > 1)
+                IsOverviewNextEnabled = true;
+
+            #endregion
+
         }
         private void PreviousQuestion()
         {
-            // Selecting Answer
-            switch (QuizQuestions[_questionNumber - 1].SelectedAnswer)
-            {
-                case 1:
-                    Answer1Disable();
-                    break;
-                case 2:
-                    Answer2Disable();
-                    break;
-                case 3:
-                    Answer3Disable();
-                    break;
-                case 4:
-                    Answer4Disable();
-                    break;
-            }
-
             _questionNumber--;
+
+            SelectAnswerLoad();
+
             IsNextEnabled = true;
-
-            SetNumberOfQuestion();
-
-            SetQuestion();
-            SetAnswers();
-
-            IsAnswerSelected();
 
             if (_questionNumber == 0)
                 IsPreviousEnabled = false;
         }
         private void NextQuestion()
         {
-            // Selecting Answer
-            switch (QuizQuestions[_questionNumber + 1].SelectedAnswer)
-            {
-                case 1:
-                    Answer1Disable();
-                    break;
-                case 2:
-                    Answer2Disable();
-                    break;
-                case 3:
-                    Answer3Disable();
-                    break;
-                case 4:
-                    Answer4Disable();
-                    break;
-            }
-
             _questionNumber++;
+            
+            SelectAnswerLoad();
+
             IsPreviousEnabled = true;
-
-            SetNumberOfQuestion();
-
-            SetQuestion();
-            SetAnswers();
-
-            IsAnswerSelected();
 
             if (_questionNumber + 1 == QuizQuestions.Count)
                 IsNextEnabled = false;
 
+        }
+        private void OverviewPreviousQuestion()
+        {
+            _questionNumber--;
+            IsOverviewNextEnabled = true;
+
+            OverviewSelectChoseAnswerLoad();
+            OverviewShowAnswer();
+
+            if (_questionNumber == 0)
+                IsOverviewPreviousEnabled = false;
+        }
+        private void OverviewNextQuestion()
+        {
+            _questionNumber++;
+            IsOverviewPreviousEnabled = true;
+
+            OverviewSelectChoseAnswerLoad();
+            OverviewShowAnswer();
+
+            if (_questionNumber + 1 == QuizQuestions.Count)
+                IsOverviewNextEnabled = false;
         }
         private void Answer1Chose()
         {
@@ -201,6 +200,8 @@ namespace QuizSolver.ViewModel
         public RelayCommand Answer4Command => new(execute => Answer4Chose());
         public RelayCommand PreviousCommand => new(execute => PreviousQuestion());
         public RelayCommand NextCommand => new(execute => NextQuestion());
+        public RelayCommand OverviewPreviousCommand => new(execute => OverviewPreviousQuestion());
+        public RelayCommand OverviewNextCommand => new(execute => OverviewNextQuestion());
 
         #endregion Commands
 
@@ -235,6 +236,12 @@ namespace QuizSolver.ViewModel
             if (QuizQuestions[_questionNumber].SelectedAnswer == 0)
                 IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = true;
         }
+        private void DefaultButtons()
+        {
+            Answer1Brush = Answer2Brush = Answer3Brush = Answer4Brush = "#707070";
+            Answer1Thickness = Answer2Thickness = Answer3Thickness = Answer4Thickness = 1;
+            Answer1ChoseBg = Answer2ChoseBg = Answer3ChoseBg = Answer4ChoseBg = "#363636";
+        }
         private void Answer1Disable()
         {
             IsAnswer1Enabled = false;
@@ -254,6 +261,201 @@ namespace QuizSolver.ViewModel
         {
             IsAnswer4Enabled = false;
             IsAnswer1Enabled = IsAnswer2Enabled = IsAnswer3Enabled = true;
+        }
+        private void SelectAnswerLoad()
+        {
+            // Selecting Answer
+            switch (QuizQuestions[_questionNumber].SelectedAnswer)
+            {
+                case 1:
+                    Answer1Disable();
+                    break;
+                case 2:
+                    Answer2Disable();
+                    break;
+                case 3:
+                    Answer3Disable();
+                    break;
+                case 4:
+                    Answer4Disable();
+                    break;
+            }
+
+            SetNumberOfQuestion();
+
+            SetQuestion();
+            SetAnswers();
+
+            IsAnswerSelected();
+        }
+        private void Answer1OverviewChose()
+        {
+            Answer1ChoseBg = "#232323";
+            Answer2ChoseBg = Answer3ChoseBg = Answer4ChoseBg = "#363636";
+
+            Answer1Brush = "DarkRed";
+            Answer2Brush = Answer3Brush = Answer4Brush = "#646464";
+        }
+        private void Answer2OverviewChose()
+        {
+            Answer2ChoseBg = "#232323";
+            Answer1ChoseBg = Answer3ChoseBg = Answer4ChoseBg = "#363636";
+
+            Answer2Brush = "DarkRed";
+            Answer1Brush = Answer3Brush = Answer4Brush = "#646464";
+        }
+        private void Answer3OverviewChose()
+        {
+            Answer3ChoseBg = "#232323";
+            Answer1ChoseBg = Answer2ChoseBg = Answer4ChoseBg = "#363636";
+
+            Answer3Brush = "DarkRed";
+            Answer1Brush = Answer2Brush = Answer4Brush = "#646464";
+        }
+        private void Answer4OverviewChose()
+        {
+            Answer4ChoseBg = "#232323";
+            Answer1ChoseBg = Answer2ChoseBg = Answer3ChoseBg = "#363636";
+
+            Answer4Brush = "DarkRed";
+            Answer1Brush = Answer2Brush = Answer3Brush = "#646464";
+        }
+        private void Answer1Correct()
+        {
+            Answer1Thickness = 5;
+            Answer2Thickness = Answer3Thickness = Answer4Thickness = 1;
+
+            Answer1Brush = "DarkGreen";
+
+            if (Answer2Brush == "DarkRed")
+            {
+                Answer2Thickness = 5;
+                Answer3Brush = Answer4Brush = "#646464";
+            }
+            if (Answer3Brush == "DarkRed")
+            {
+                Answer3Thickness = 5;
+                Answer2Brush = Answer4Brush = "#646464";
+            }
+            if (Answer4Brush == "DarkRed")
+            {
+                Answer4Thickness = 5;
+                Answer2Brush = Answer3Brush = "#646464";
+            }
+        }
+        private void Answer2Correct()
+        {
+            Answer2Thickness = 5;
+            Answer1Thickness = Answer3Thickness = Answer4Thickness = 1;
+
+            Answer2Brush = "DarkGreen";
+
+            if (Answer1Brush == "DarkRed")
+            {
+                Answer1Thickness = 5;
+                Answer3Brush = Answer4Brush = "#646464";
+            }
+            if (Answer3Brush == "DarkRed")
+            {
+                Answer3Thickness = 5;
+                Answer1Brush = Answer4Brush = "#646464";
+            }
+            if (Answer4Brush == "DarkRed")
+            {
+                Answer4Thickness = 5;
+                Answer1Brush = Answer3Brush = "#646464";
+            }
+        }
+        private void Answer3Correct()
+        {
+            Answer3Thickness = 5;
+            Answer1Thickness = Answer2Thickness = Answer4Thickness = 1;
+
+            Answer3Brush = "DarkGreen";
+
+            if (Answer1Brush == "DarkRed")
+            {
+                Answer1Thickness = 5;
+                Answer2Brush = Answer4Brush = "#646464";
+            }
+            if (Answer2Brush == "DarkRed")
+            {
+                Answer2Thickness = 5;
+                Answer1Brush = Answer4Brush = "#646464";
+            }
+            if (Answer4Brush == "DarkRed")
+            {
+                Answer4Thickness = 5;
+                Answer1Brush = Answer1Brush = "#646464";
+            }
+        }
+        private void Answer4Correct()
+        {
+            Answer4Thickness = 5;
+            Answer1Thickness = Answer2Thickness = Answer3Thickness = 1;
+
+            Answer4Brush = "DarkGreen";
+
+            if (Answer1Brush == "DarkRed")
+            {
+                Answer1Thickness = 5;
+                Answer2Brush = Answer3Brush = "#646464";
+            }
+            if (Answer2Brush == "DarkRed")
+            {
+                Answer2Thickness = 5;
+                Answer1Brush = Answer3Brush = "#646464";
+            }
+            if (Answer3Brush == "DarkRed")
+            {
+                Answer3Thickness = 5;
+                Answer1Brush = Answer2Brush = "#646464";
+            }
+        }
+        private void OverviewSelectChoseAnswerLoad()
+        {
+            // Overview Selecting Chose Answer
+            switch (QuizQuestions[_questionNumber].SelectedAnswer)
+            {
+                case 1:
+                    Answer1OverviewChose();
+                    break;
+                case 2:
+                    Answer2OverviewChose();
+                    break;
+                case 3:
+                    Answer3OverviewChose();
+                    break;
+                case 4:
+                    Answer4OverviewChose();
+                    break;
+            }
+
+            SetNumberOfQuestion();
+
+            SetQuestion();
+            Question = "OVERVIEW: " + Question;
+            SetAnswers();
+
+            IsAnswerSelected();
+        }
+        private void OverviewShowAnswer()
+        {
+            switch (QuizQuestions[_questionNumber].CorrectAnswer)
+            {
+                case 1:
+                    Answer1Correct();
+                    break;
+                case 2:
+                    Answer2Correct();
+                    break;
+                case 3:
+                    Answer3Correct();
+                    break;
+                case 4:
+                    Answer4Correct();
+                    break;
+            }
         }
         private void StartTimer()
         {
@@ -385,7 +587,166 @@ namespace QuizSolver.ViewModel
             get => _selectedQuiz;
             set
             {
+                Question = Answer1 = Answer2 = Answer3 = Answer4 = 
+                    NumberOfQuestion = QuestionScoreText = TimeElapsed = null;
+
+                IsOverviewPreviousEnabled = IsOverviewNextEnabled = IsAnswer1Enabled = 
+                    IsAnswer2Enabled = IsAnswer3Enabled = IsAnswer4Enabled = false;
+                
+                Answer1Thickness = Answer2Thickness = 
+                        Answer3Thickness = Answer4Thickness = 1;
+
                 _selectedQuiz = value;
+                OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
+
+        // Overview Brush Properties
+        #region Overview Brush Properties
+
+        private string _answer1Brush = "#707070";
+        public string Answer1Brush
+        {
+            get => _answer1Brush;
+            set
+            {
+                _answer1Brush = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _answer2Brush = "#707070";
+        public string Answer2Brush
+        {
+            get => _answer2Brush;
+            set
+            {
+                _answer2Brush = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _answer3Brush = "#707070";
+        public string Answer3Brush
+        {
+            get => _answer3Brush;
+            set
+            {
+                _answer3Brush = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _answer4Brush = "#707070";
+        public string Answer4Brush
+        {
+            get => _answer4Brush;
+            set
+            {
+                _answer4Brush = value;
+                OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
+
+        // Overview Thickness Properties
+        #region Overview Thickness Properties
+
+        private int _answer1Thickness = 1;
+        public int Answer1Thickness
+        {
+            get => _answer1Thickness;
+            set
+            {
+                _answer1Thickness = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _answer2Thickness = 1;
+        public int Answer2Thickness
+        {
+            get => _answer2Thickness;
+            set
+            {
+                _answer2Thickness = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _answer3Thickness = 1;
+        public int Answer3Thickness
+        {
+            get => _answer3Thickness;
+            set
+            {
+                _answer3Thickness = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _answer4Thickness = 1;
+        public int Answer4Thickness
+        {
+            get => _answer4Thickness;
+            set
+            {
+                _answer4Thickness = value;
+                OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
+
+        // Overview Background Properties
+        #region Overview Background Properties
+
+        private string _answer1ChoseBg = "#363636";
+        public string Answer1ChoseBg
+        {
+            get => _answer1ChoseBg;
+            set
+            {
+                _answer1ChoseBg = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _answer2ChoseBg = "#363636";
+        public string Answer2ChoseBg
+        {
+            get => _answer2ChoseBg;
+            set
+            {
+                _answer2ChoseBg = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _answer3ChoseBg = "#363636";
+        public string Answer3ChoseBg
+        {
+            get => _answer3ChoseBg;
+            set
+            {
+                _answer3ChoseBg = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _answer4ChoseBg = "#363636";
+        public string Answer4ChoseBg
+        {
+            get => _answer4ChoseBg;
+            set
+            {
+                _answer4ChoseBg = value;
                 OnPropertyChanged();
             }
         }
@@ -484,6 +845,39 @@ namespace QuizSolver.ViewModel
             }
         }
 
+        private bool _isOverviewPreviousEnabled = false;
+        public bool IsOverviewPreviousEnabled
+        {
+            get => _isOverviewPreviousEnabled;
+            set
+            {
+                _isOverviewPreviousEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isOverviewNextEnabled = false;
+        public bool IsOverviewNextEnabled
+        {
+            get => _isOverviewNextEnabled;
+            set
+            {
+                _isOverviewNextEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _isAnswerAbleToClick = true;
+        public bool IsAnswerAbleToClick
+        {
+            get => _isAnswerAbleToClick;
+            set
+            {
+                _isAnswerAbleToClick = value;
+                OnPropertyChanged();
+            }
+        }
+
         #endregion
 
 
@@ -510,6 +904,30 @@ namespace QuizSolver.ViewModel
             set
             {
                 _isTipVisible = value ? "Visible" : "Hidden";
+                OnPropertyChanged();
+            }
+        }
+
+        private string _isPreviousVisible = "Visible";
+        public bool IsPreviousVisible
+        {
+            get => _isPreviousVisible == "Visible";
+
+            set
+            {
+                _isPreviousVisible = value ? "Visible" : "Hidden";
+                OnPropertyChanged();
+            }
+        }
+
+        private string _isNextVisible = "Visible";
+        public bool IsNextVisible
+        {
+            get => _isNextVisible == "Visible";
+
+            set
+            {
+                _isNextVisible = value ? "Visible" : "Hidden";
                 OnPropertyChanged();
             }
         }
